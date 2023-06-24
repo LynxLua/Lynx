@@ -1,5 +1,3 @@
--- UI Library
-
 local UI = {}
 
 -- Window
@@ -7,56 +5,67 @@ local UI = {}
 function UI.Window(title, size)
     local window = Instance.new("ScreenGui")
     window.Name = "Window"
-    window.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    window.ResetOnSpawn = false
+    window.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-    local frame = Instance.new("Frame")
-    frame.Name = "Frame"
-    frame.Size = UDim2.new(0, size.X, 0, size.Y)
-    frame.Position = UDim2.new(0.5, -size.X / 2, 0.5, -size.Y / 2)
-    frame.BackgroundColor3 = Color3.new(0, 0, 0)
-    frame.BackgroundTransparency = 0.5
-    frame.Parent = window
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = size or UDim2.new(0, 300, 0, 200)
+    mainFrame.Position = UDim2.new(0.5, -(mainFrame.Size.X.Offset / 2), 0.5, -(mainFrame.Size.Y.Offset / 2))
+    mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = window
+
+    local titleBar = Instance.new("Frame")
+    titleBar.Name = "TitleBar"
+    titleBar.Size = UDim2.new(1, 0, 0, 30)
+    titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    titleBar.BorderSizePixel = 0
+    titleBar.Parent = mainFrame
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "TitleLabel"
+    titleLabel.Text = title
+    titleLabel.Size = UDim2.new(1, 0, 1, 0)
+    titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 18
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.Parent = titleBar
+
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Name = "ContentFrame"
+    contentFrame.Size = UDim2.new(1, 0, 1, -30)
+    contentFrame.Position = UDim2.new(0, 0, 0, 30)
+    contentFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    contentFrame.BorderSizePixel = 0
+    contentFrame.Parent = mainFrame
+
+    window.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    return window, mainFrame, titleBar, titleLabel, contentFrame
+end
+
+-- Tab
+
+function UI.Tab(title)
+    local tab = Instance.new("Frame")
+    tab.Name = "Tab"
+    tab.Size = UDim2.new(1, 0, 1, 0)
+    tab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    tab.BorderSizePixel = 0
+    tab.Visible = false
 
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "TitleLabel"
     titleLabel.Text = title
     titleLabel.Size = UDim2.new(1, 0, 0, 30)
-    titleLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-    titleLabel.TextColor3 = Color3.new(1, 1, 1)
-    titleLabel.Parent = frame
+    titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 14
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.Parent = tab
 
-    return window, frame, titleLabel
-end
-
--- Tab
-
-function UI.Tab(name, parent)
-    local tab = Instance.new("Frame")
-    tab.Name = "Tab"
-    tab.Size = UDim2.new(1, 0, 1, -30)
-    tab.Position = UDim2.new(0, 0, 0, 30)
-    tab.BackgroundTransparency = 1
-    tab.Visible = false
-    tab.Parent = parent
-
-    local button = Instance.new("TextButton")
-    button.Name = "Button"
-    button.Text = name
-    button.Size = UDim2.new(0, 100, 0, 30)
-    button.BackgroundColor3 = Color3.new(0, 0, 0)
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Parent = parent:WaitForChild("Frame")
-
-    button.MouseButton1Click:Connect(function()
-        for _, child in ipairs(parent:GetChildren()) do
-            if child:IsA("Frame") and child.Name == "Tab" then
-                child.Visible = false
-            end
-        end
-        tab.Visible = true
-    end)
-
-    return tab, button
+    return tab, titleLabel
 end
 
 -- Button
@@ -65,9 +74,12 @@ function UI.Button(text, parent, callback)
     local button = Instance.new("TextButton")
     button.Name = "Button"
     button.Text = text
-    button.Size = UDim2.new(1, 0, 0, 30)
-    button.BackgroundColor3 = Color3.new(0, 0, 0)
-    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Size = UDim2.new(0, 150, 0, 30)
+    button.Position = UDim2.new(0.5, -75, 0.5, -15)
+    button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    button.Font = Enum.Font.SourceSansBold
     button.Parent = parent
 
     button.MouseButton1Click:Connect(function()
@@ -81,231 +93,243 @@ end
 
 -- Toggle
 
-function UI.Toggle(text, parent, callback)
+function UI.Toggle(text, parent, default, callback)
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Name = "ToggleFrame"
-    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
-    toggleFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    toggleFrame.Size = UDim2.new(0, 150, 0, 30)
+    toggleFrame.Position = UDim2.new(0.5, -75, 0.5, -15)
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     toggleFrame.Parent = parent
 
     local toggleText = Instance.new("TextLabel")
     toggleText.Name = "ToggleText"
     toggleText.Text = text
-    toggleText.Size = UDim2.new(0.7, 0, 1, 0)
+    toggleText.Size = UDim2.new(0.8, 0, 1, 0)
     toggleText.Position = UDim2.new(0, 0, 0, 0)
-    toggleText.BackgroundColor3 = Color3.new(0, 0, 0)
-    toggleText.TextColor3 = Color3.new(1, 1, 1)
+    toggleText.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleText.TextSize = 14
+    toggleText.Font = Enum.Font.SourceSansBold
     toggleText.Parent = toggleFrame
 
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
-    toggleButton.Text = ""
-    toggleButton.Size = UDim2.new(0.3, 0, 1, 0)
-    toggleButton.Position = UDim2.new(0.7, 0, 0, 0)
-    toggleButton.BackgroundColor3 = Color3.new(0, 0, 0)
-    toggleButton.TextColor3 = Color3.new(1, 1, 1)
+    toggleButton.Text = default and "ON" or "OFF"
+    toggleButton.Size = UDim2.new(0.2, 0, 1, 0)
+    toggleButton.Position = UDim2.new(0.8, 0, 0, 0)
+    toggleButton.BackgroundColor3 = default and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.TextSize = 14
+    toggleButton.Font = Enum.Font.SourceSansBold
     toggleButton.Parent = toggleFrame
 
-    local toggleValue = false
+    local isToggled = default
 
     toggleButton.MouseButton1Click:Connect(function()
-        toggleValue = not toggleValue
-        if toggleValue then
-            toggleButton.BackgroundColor3 = Color3.new(0, 1, 0)
-        else
-            toggleButton.BackgroundColor3 = Color3.new(1, 0, 0)
-        end
-
+        isToggled = not isToggled
+        toggleButton.Text = isToggled and "ON" or "OFF"
+        toggleButton.BackgroundColor3 = isToggled and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
         if callback then
-            callback(toggleValue)
+            callback(isToggled)
         end
     end)
 
-    return toggleValue, toggleFrame, toggleText, toggleButton
+    return isToggled, toggleFrame, toggleText, toggleButton
 end
 
 -- Slider
 
-function UI.Slider(text, minValue, maxValue, startValue, parent, callback)
+function UI.Slider(text, parent, minValue, maxValue, defaultValue, callback)
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Name = "SliderFrame"
-    sliderFrame.Size = UDim2.new(1, 0, 0, 30)
-    sliderFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    sliderFrame.Size = UDim2.new(0, 150, 0, 30)
+    sliderFrame.Position = UDim2.new(0.5, -75, 0.5, -15)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     sliderFrame.Parent = parent
 
     local sliderText = Instance.new("TextLabel")
     sliderText.Name = "SliderText"
-    sliderText.Text = text .. ": " .. startValue
-    sliderText.Size = UDim2.new(0.4, 0, 1, 0)
+    sliderText.Text = text
+    sliderText.Size = UDim2.new(0.8, 0, 1, 0)
     sliderText.Position = UDim2.new(0, 0, 0, 0)
-    sliderText.BackgroundColor3 = Color3.new(0, 0, 0)
-    sliderText.TextColor3 = Color3.new(1, 1, 1)
+    sliderText.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sliderText.TextSize = 14
+    sliderText.Font = Enum.Font.SourceSansBold
     sliderText.Parent = sliderFrame
 
-    local sliderValue = startValue
+    local sliderValue = Instance.new("TextLabel")
+    sliderValue.Name = "SliderValue"
+    sliderValue.Text = tostring(defaultValue)
+    sliderValue.Size = UDim2.new(0.2, 0, 1, 0)
+    sliderValue.Position = UDim2.new(0.8, 0, 0, 0)
+    sliderValue.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    sliderValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sliderValue.TextSize = 14
+    sliderValue.Font = Enum.Font.SourceSansBold
+    sliderValue.Parent = sliderFrame
 
     local sliderBar = Instance.new("Frame")
     sliderBar.Name = "SliderBar"
-    sliderBar.Size = UDim2.new(0.6, 0, 0, 5)
-    sliderBar.Position = UDim2.new(0.4, 0, 0.5, -2.5)
-    sliderBar.BackgroundColor3 = Color3.new(1, 1, 1)
+    sliderBar.Size = UDim2.new(0.7, 0, 0, 10)
+    sliderBar.Position = UDim2.new(0.15, 0, 0.5, -5)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(170, 170, 170)
     sliderBar.Parent = sliderFrame
 
     local sliderButton = Instance.new("TextButton")
     sliderButton.Name = "SliderButton"
     sliderButton.Text = ""
     sliderButton.Size = UDim2.new(0, 10, 0, 20)
-    sliderButton.Position = UDim2.new((startValue - minValue) / (maxValue - minValue), -5, 0.5, -10)
-    sliderButton.BackgroundColor3 = Color3.new(0, 0, 0)
-    sliderButton.TextColor3 = Color3.new(1, 1, 1)
-    sliderButton.Parent = sliderFrame
+    sliderButton.Position = UDim2.new((defaultValue - minValue) / (maxValue - minValue), -5, 0.5, -10)
+    sliderButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    sliderButton.Parent = sliderBar
 
-    local dragStartX = 0
-    local dragStartPos = 0
+    local isDragging = false
 
-    local function updateSlider()
-        sliderButton.Position = UDim2.new((sliderValue - minValue) / (maxValue - minValue), -5, 0.5, -10)
-        sliderText.Text = text .. ": " .. sliderValue
-        if callback then
-            callback(sliderValue)
+    sliderButton.MouseButton1Down:Connect(function()
+        isDragging = true
+    end)
+
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
         end
-    end
-
-    sliderButton.MouseButton1Down:Connect(function(x, y)
-        dragStartX = x
-        dragStartPos = sliderButton.Position.X.Offset
     end)
 
     game:GetService("UserInputService").InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-            local delta = input.Position.X - dragStartX
-            local newPos = math.clamp(dragStartPos + delta, 0, sliderFrame.AbsoluteSize.X - sliderButton.Size.X.Offset)
-            local ratio = newPos / (sliderFrame.AbsoluteSize.X - sliderButton.Size.X.Offset)
-            sliderValue = minValue + (maxValue - minValue) * ratio
-            updateSlider()
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mousePosition = input.Position
+            local barPosition = sliderBar.AbsolutePosition
+            local barSize = sliderBar.AbsoluteSize
+            local barLeft = barPosition.X
+            local barRight = barPosition.X + barSize.X
+
+            local value = math.clamp((mousePosition.X - barLeft) / (barRight - barLeft), 0, 1)
+            local scaledValue = minValue + value * (maxValue - minValue)
+
+            sliderButton.Position = UDim2.new(value, -5, 0.5, -10)
+            sliderValue.Text = string.format("%.2f", scaledValue)
+
+            if callback then
+                callback(scaledValue)
+            end
         end
     end)
 
-    return sliderValue, sliderFrame, sliderText, sliderButton
+    return defaultValue, sliderFrame, sliderText, sliderValue
 end
 
 -- Dropdown
 
-function UI.Dropdown(options, parent, callback)
+function UI.Dropdown(options, parent, defaultIndex, callback)
     local dropdownFrame = Instance.new("Frame")
     dropdownFrame.Name = "DropdownFrame"
-    dropdownFrame.Size = UDim2.new(1, 0, 0, 30)
-    dropdownFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    dropdownFrame.Size = UDim2.new(0, 150, 0, 30)
+    dropdownFrame.Position = UDim2.new(0.5, -75, 0.5, -15)
+    dropdownFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    dropdownFrame.ClipsDescendants = true
     dropdownFrame.Parent = parent
-
-    local dropdownText = Instance.new("TextLabel")
-    dropdownText.Name = "DropdownText"
-    dropdownText.Text = options[1]
-    dropdownText.Size = UDim2.new(0.8, 0, 1, 0)
-    dropdownText.Position = UDim2.new(0, 0, 0, 0)
-    dropdownText.BackgroundColor3 = Color3.new(0, 0, 0)
-    dropdownText.TextColor3 = Color3.new(1, 1, 1)
-    dropdownText.Parent = dropdownFrame
 
     local dropdownButton = Instance.new("TextButton")
     dropdownButton.Name = "DropdownButton"
-    dropdownButton.Text = "▼"
-    dropdownButton.Size = UDim2.new(0.2, 0, 1, 0)
-    dropdownButton.Position = UDim2.new(0.8, 0, 0, 0)
-    dropdownButton.BackgroundColor3 = Color3.new(0, 0, 0)
-    dropdownButton.TextColor3 = Color3.new(1, 1, 1)
+    dropdownButton.Text = options[defaultIndex] or "Select"
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.TextSize = 14
+    dropdownButton.Font = Enum.Font.SourceSansBold
     dropdownButton.Parent = dropdownFrame
 
-    local dropdownOpen = false
-
-    local dropdownList = Instance.new("Frame")
+    local dropdownList = Instance.new("ScrollingFrame")
     dropdownList.Name = "DropdownList"
     dropdownList.Size = UDim2.new(1, 0, 0, 0)
     dropdownList.Position = UDim2.new(0, 0, 1, 0)
-    dropdownList.BackgroundColor3 = Color3.new(0, 0, 0)
+    dropdownList.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    dropdownList.BorderSizePixel = 0
     dropdownList.Visible = false
+    dropdownList.ClipsDescendants = true
+    dropdownList.ScrollBarThickness = 0
     dropdownList.Parent = dropdownFrame
 
-    for _, option in ipairs(options) do
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Name = "ListLayout"
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = dropdownList
+
+    local selectedOptionIndex = defaultIndex
+
+    local function updateDropdownButton()
+        dropdownButton.Text = options[selectedOptionIndex] or "Select"
+    end
+
+    local function updateDropdownList()
+        dropdownList.CanvasSize = UDim2.new(1, 0, 0, #options * 30)
+        dropdownList.Visible = not dropdownList.Visible
+    end
+
+    local function selectOption(index)
+        selectedOptionIndex = index
+        updateDropdownButton()
+        updateDropdownList()
+        if callback then
+            callback(selectedOptionIndex)
+        end
+    end
+
+    for i, optionText in ipairs(options) do
         local optionButton = Instance.new("TextButton")
         optionButton.Name = "OptionButton"
-        optionButton.Text = option
+        optionButton.Text = optionText
         optionButton.Size = UDim2.new(1, 0, 0, 30)
-        optionButton.BackgroundColor3 = Color3.new(0, 0, 0)
-        optionButton.TextColor3 = Color3.new(1, 1, 1)
+        optionButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        optionButton.TextSize = 14
+        optionButton.Font = Enum.Font.SourceSansBold
         optionButton.Parent = dropdownList
 
         optionButton.MouseButton1Click:Connect(function()
-            dropdownText.Text = option
-            dropdownOpen = false
-            dropdownList.Visible = false
-            if callback then
-                callback(option)
-            end
+            selectOption(i)
         end)
     end
 
     dropdownButton.MouseButton1Click:Connect(function()
-        dropdownOpen = not dropdownOpen
-        if dropdownOpen then
-            dropdownList.Visible = true
-        else
-            dropdownList.Visible = false
-        end
+        updateDropdownList()
     end)
 
-    return dropdownText, dropdownFrame, dropdownButton, dropdownList
+    return selectedOptionIndex, dropdownFrame, dropdownButton, dropdownList
 end
 
 -- Colorpicker
 
-function UI.Colorpicker(text, parent, callback)
+function UI.Colorpicker(parent, defaultColor, callback)
     local colorpickerFrame = Instance.new("Frame")
     colorpickerFrame.Name = "ColorpickerFrame"
-    colorpickerFrame.Size = UDim2.new(1, 0, 0, 30)
-    colorpickerFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    colorpickerFrame.Size = UDim2.new(0, 150, 0, 30)
+    colorpickerFrame.Position = UDim2.new(0.5, -75, 0.5, -15)
+    colorpickerFrame.BackgroundColor3 = defaultColor or Color3.new(1, 1, 1)
     colorpickerFrame.Parent = parent
-
-    local colorpickerText = Instance.new("TextLabel")
-    colorpickerText.Name = "ColorpickerText"
-    colorpickerText.Text = text
-    colorpickerText.Size = UDim2.new(0.8, 0, 1, 0)
-    colorpickerText.Position = UDim2.new(0, 0, 0, 0)
-    colorpickerText.BackgroundColor3 = Color3.new(0, 0, 0)
-    colorpickerText.TextColor3 = Color3.new(1, 1, 1)
-    colorpickerText.Parent = colorpickerFrame
 
     local colorpickerButton = Instance.new("TextButton")
     colorpickerButton.Name = "ColorpickerButton"
     colorpickerButton.Text = ""
-    colorpickerButton.Size = UDim2.new(0.2, 0, 1, 0)
-    colorpickerButton.Position = UDim2.new(0.8, 0, 0, 0)
-    colorpickerButton.BackgroundColor3 = Color3.new(0, 0, 0)
-    colorpickerButton.TextColor3 = Color3.new(1, 1, 1)
+    colorpickerButton.Size = UDim2.new(1, 0, 1, 0)
+    colorpickerButton.BackgroundColor3 = defaultColor or Color3.new(1, 1, 1)
     colorpickerButton.Parent = colorpickerFrame
 
-    local selectedColor = Color3.new(1, 1, 1)
-
     colorpickerButton.MouseButton1Click:Connect(function()
-        local colorPicker = game:GetService("CoreGui"):FindFirstChild("ColorPicker")
-        if not colorPicker then
-            colorPicker = Instance.new("ColorPicker")
-            colorPicker.Name = "ColorPicker"
-            colorPicker.Parent = game:GetService("CoreGui")
-        end
-        colorPicker.Visible = true
-        colorPicker.Color = selectedColor
+        local picker = Color3.fromHSV(Color3.toHSV(colorpickerButton.BackgroundColor3))
+        picker = picker or Color3.new(1, 1, 1)
 
-        colorPicker.ColorChanged:Connect(function(color)
-            selectedColor = color
-            colorpickerButton.BackgroundColor3 = selectedColor
-            if callback then
-                callback(selectedColor)
-            end
-        end)
+        local newColor = Color3.fromHSV(Color3.toHSV(picker))
+
+        if callback then
+            callback(newColor)
+        end
+
+        colorpickerButton.BackgroundColor3 = newColor
     end)
 
-    return selectedColor, colorpickerFrame, colorpickerText, colorpickerButton
+    return defaultColor, colorpickerFrame, colorpickerButton
 end
 
 -- Textbox
@@ -313,102 +337,72 @@ end
 function UI.Textbox(text, parent, callback)
     local textboxFrame = Instance.new("Frame")
     textboxFrame.Name = "TextboxFrame"
-    textboxFrame.Size = UDim2.new(1, 0, 0, 30)
-    textboxFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    textboxFrame.Size = UDim2.new(0, 150, 0, 30)
+    textboxFrame.Position = UDim2.new(0.5, -75, 0.5, -15)
+    textboxFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     textboxFrame.Parent = parent
 
-    local textboxLabel = Instance.new("TextLabel")
-    textboxLabel.Name = "TextboxLabel"
-    textboxLabel.Text = text
-    textboxLabel.Size = UDim2.new(0.3, 0, 1, 0)
-    textboxLabel.Position = UDim2.new(0, 0, 0, 0)
-    textboxLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-    textboxLabel.TextColor3 = Color3.new(1, 1, 1)
-    textboxLabel.Parent = textboxFrame
+    local textbox = Instance.new("TextBox")
+    textbox.Name = "Textbox"
+    textbox.Text = text
+    textbox.Size = UDim2.new(1, 0, 1, 0)
+    textbox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textbox.TextSize = 14
+    textbox.Font = Enum.Font.SourceSansBold
+    textbox.Parent = textboxFrame
 
-    local textboxBox = Instance.new("TextBox")
-    textboxBox.Name = "TextboxBox"
-    textboxBox.Text = ""
-    textboxBox.Size = UDim2.new(0.7, 0, 1, 0)
-    textboxBox.Position = UDim2.new(0.3, 0, 0, 0)
-    textboxBox.BackgroundColor3 = Color3.new(1, 1, 1)
-    textboxBox.TextColor3 = Color3.new(0, 0, 0)
-    textboxBox.Parent = textboxFrame
-
-    local textBoxValue = ""
-
-    textboxBox.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            textBoxValue = textboxBox.Text
-            if callback then
-                callback(textBoxValue)
-            end
+    textbox.FocusLost:Connect(function(enterPressed)
+        if callback then
+            callback(textbox.Text, enterPressed)
         end
     end)
 
-    return textBoxValue, textboxFrame, textboxLabel, textboxBox
+    return text, textboxFrame, textbox
 end
 
 -- Bind
 
-function UI.Bind(text, parent, callback)
+function UI.Bind(keyCode, parent, callback)
     local bindFrame = Instance.new("Frame")
     bindFrame.Name = "BindFrame"
-    bindFrame.Size = UDim2.new(1, 0, 0, 30)
-    bindFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+    bindFrame.Size = UDim2.new(0, 150, 0, 30)
+    bindFrame.Position = UDim2.new(0.5, -75, 0.5, -15)
+    bindFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     bindFrame.Parent = parent
 
-    local bindLabel = Instance.new("TextLabel")
-    bindLabel.Name = "BindLabel"
-    bindLabel.Text = text
-    bindLabel.Size = UDim2.new(0.4, 0, 1, 0)
-    bindLabel.Position = UDim2.new(0, 0, 0, 0)
-    bindLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-    bindLabel.TextColor3 = Color3.new(1, 1, 1)
-    bindLabel.Parent = bindFrame
+    local bindText = Instance.new("TextLabel")
+    bindText.Name = "BindText"
+    bindText.Text = "Press a key..."
+    bindText.Size = UDim2.new(1, 0, 1, 0)
+    bindText.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    bindText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    bindText.TextSize = 14
+    bindText.Font = Enum.Font.SourceSansBold
+    bindText.Parent = bindFrame
 
-    local bindButton = Instance.new("TextButton")
-    bindButton.Name = "BindButton"
-    bindButton.Text = "Click to bind"
-    bindButton.Size = UDim2.new(0.6, 0, 1, 0)
-    bindButton.Position = UDim2.new(0.4, 0, 0, 0)
-    bindButton.BackgroundColor3 = Color3.new(0, 0, 0)
-    bindButton.TextColor3 = Color3.new(1, 1, 1)
-    bindButton.Parent = bindFrame
+    local userInputService = game:GetService("UserInputService")
 
-    local bindKeyCode = nil
+    local isBinding = false
 
-    bindButton.MouseButton1Click:Connect(function()
-        bindButton.Text = "Press any key..."
-        bindKeyCode = nil
-
-        local inputBeganConn = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-            if not gameProcessed then
-                bindKeyCode = input.KeyCode
-                bindButton.Text = input.KeyCode.Name
-                inputBeganConn:Disconnect()
-                if callback then
-                    callback(bindKeyCode)
-                end
+    userInputService.InputBegan:Connect(function(input)
+        if isBinding then
+            local keyCode = input.KeyCode
+            local keyName = userInputService:GetStringForKeyCode(keyCode)
+            bindText.Text = keyName
+            isBinding = false
+            if callback then
+                callback(keyCode)
             end
-        end)
+        end
     end)
 
-    return bindKeyCode, bindFrame, bindLabel, bindButton
-end
+    bindFrame.MouseButton1Click:Connect(function()
+        isBinding = true
+        bindText.Text = "Press a key..."
+    end)
 
--- Label
-
-function UI.Label(text, parent)
-    local label = Instance.new("TextLabel")
-    label.Name = "Label"
-    label.Text = text
-    label.Size = UDim2.new(1, 0, 0, 30)
-    label.BackgroundColor3 = Color3.new(0, 0, 0)
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.Parent = parent
-
-    return label
+    return bindFrame, bindText
 end
 
 return UI
